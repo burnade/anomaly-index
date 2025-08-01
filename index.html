@@ -74,30 +74,21 @@
     .hidden {
       display: none;
     }
-    .nav {
-      margin-top: 1rem;
-      text-align: center;
-    }
-    .nav button {
-      margin: 0 0.5rem;
-    }
   </style>
 </head>
 <body>
   <header>
-    <h1>세계관 정보 시스템</h1>
+    <h1>이변 관리 시스템</h1>
   </header>
 
   <div id="mainScreen" class="container">
     <div style="text-align:center">
       <button onclick="goToAnomalyList()">이변 목록 보기</button>
-      <button onclick="goToGlossary()">세계관 용어 정리</button>
     </div>
   </div>
 
   <div id="anomalyScreen" class="hidden container">
     <h2>이변 목록</h2>
-    <div class="nav"><button onclick="goToMain()">메인 화면으로</button></div>
 
     <label>분류 필터:
       <select id="filterType" onchange="renderTable()"></select>
@@ -136,52 +127,37 @@
     <button onclick="deleteType()">삭제</button>
   </div>
 
-  <div id="glossaryScreen" class="hidden container">
-    <h2>세계관 용어 정리</h2>
-    <div class="nav"><button onclick="goToMain()">메인 화면으로</button></div>
-    <label>용어: <input type="text" id="term"></label>
-    <label>설명: <textarea id="termDesc" rows="4"></textarea></label>
-    <button onclick="addTerm()">용어 추가</button>
-    <table id="glossaryTable">
-      <thead>
-        <tr><th>용어</th><th>설명</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
   <footer>
-    <small>&copy; 세계관 정보 시스템</small>
+    <small>&copy; 이변 관리 시스템</small>
   </footer>
 
   <script>
     let editIndex = null;
     let types = JSON.parse(localStorage.getItem("types")) || ["A", "R", "H"];
+
     function saveData(data) {
       localStorage.setItem("anomalies", JSON.stringify(data));
     }
+
     function loadData() {
       return JSON.parse(localStorage.getItem("anomalies")) || [];
     }
+
     function saveTypes() {
       localStorage.setItem("types", JSON.stringify(types));
     }
+
     function renderTypeDropdowns() {
       const filterSelect = document.getElementById("filterType");
       const deleteSelect = document.getElementById("deleteType");
       filterSelect.innerHTML = `<option value="">전체</option>`;
       deleteSelect.innerHTML = "";
-      types.sort(); // 알파벳 순 정렬
       types.forEach(type => {
-        const opt1 = document.createElement("option");
-        opt1.value = opt1.textContent = type;
-        filterSelect.appendChild(opt1);
-
-        const opt2 = document.createElement("option");
-        opt2.value = opt2.textContent = type;
-        deleteSelect.appendChild(opt2);
+        filterSelect.innerHTML += `<option value="${type}">${type}</option>`;
+        deleteSelect.innerHTML += `<option value="${type}">${type}</option>`;
       });
     }
+
     function renderTable() {
       renderTypeDropdowns();
       const table = document.getElementById("anomalyTable").getElementsByTagName("tbody")[0];
@@ -193,18 +169,23 @@
           const row = table.insertRow();
           row.insertCell(0).innerText = entry.code;
           row.insertCell(1).innerText = entry.name || "";
+
           const isoCell = row.insertCell(2);
           isoCell.innerText = entry.isolation;
           isoCell.style.color = getLevelColor(entry.isolation);
+
           const thrCell = row.insertCell(3);
           thrCell.innerText = entry.threat;
           thrCell.style.color = getLevelColor(entry.threat);
+
           row.insertCell(4).innerText = entry.description;
+
           const editCell = row.insertCell(5);
           const editButton = document.createElement("button");
           editButton.innerText = "수정";
           editButton.onclick = () => startEdit(index);
           editCell.appendChild(editButton);
+
           const deleteCell = row.insertCell(6);
           const deleteButton = document.createElement("button");
           deleteButton.innerText = "삭제";
@@ -213,12 +194,14 @@
         }
       });
     }
+
     function getLevelColor(level) {
       const lvl = parseInt(level);
       if (lvl >= 5) return "#ff6b6b";
       if (lvl >= 3) return "#ffa502";
       return "#70a1ff";
     }
+
     function addEntry() {
       const code = document.getElementById("code").value;
       const name = document.getElementById("name").value;
@@ -226,6 +209,7 @@
       const threat = document.getElementById("threat").value;
       const description = document.getElementById("description").value;
       const data = loadData();
+
       if (editIndex !== null) {
         data[editIndex] = { code, name, isolation, threat, description };
         editIndex = null;
@@ -235,6 +219,7 @@
       } else {
         data.push({ code, name, isolation, threat, description });
       }
+
       saveData(data);
       renderTable();
       document.getElementById("code").value = "";
@@ -243,6 +228,7 @@
       document.getElementById("threat").value = "";
       document.getElementById("description").value = "";
     }
+
     function startEdit(index) {
       const data = loadData();
       const entry = data[index];
@@ -256,6 +242,7 @@
       document.getElementById("submitBtn").innerText = "수정 저장";
       document.getElementById("cancelEditBtn").style.display = "inline-block";
     }
+
     function cancelEdit() {
       editIndex = null;
       document.getElementById("code").value = "";
@@ -267,6 +254,7 @@
       document.getElementById("submitBtn").innerText = "이변 추가";
       document.getElementById("cancelEditBtn").style.display = "none";
     }
+
     function deleteEntry(index) {
       const data = loadData();
       if (confirm("정말로 이 이변을 삭제하시겠습니까?")) {
@@ -275,6 +263,7 @@
         renderTable();
       }
     }
+
     function addType() {
       const newType = document.getElementById("newType").value.trim();
       if (newType && !types.includes(newType)) {
@@ -284,49 +273,20 @@
         document.getElementById("newType").value = "";
       }
     }
+
     function deleteType() {
       const selected = document.getElementById("deleteType").value;
       types = types.filter(t => t !== selected);
       saveTypes();
       renderTypeDropdowns();
     }
-    function goToMain() {
-      document.getElementById("mainScreen").classList.remove("hidden");
-      document.getElementById("anomalyScreen").classList.add("hidden");
-      document.getElementById("glossaryScreen").classList.add("hidden");
-    }
+
     function goToAnomalyList() {
       document.getElementById("mainScreen").classList.add("hidden");
       document.getElementById("anomalyScreen").classList.remove("hidden");
-      document.getElementById("glossaryScreen").classList.add("hidden");
       renderTable();
     }
-    function goToGlossary() {
-      document.getElementById("mainScreen").classList.add("hidden");
-      document.getElementById("anomalyScreen").classList.add("hidden");
-      document.getElementById("glossaryScreen").classList.remove("hidden");
-      renderGlossary();
-    }
-    function addTerm() {
-      const term = document.getElementById("term").value;
-      const termDesc = document.getElementById("termDesc").value;
-      const glossary = JSON.parse(localStorage.getItem("glossary")) || [];
-      glossary.push({ term, termDesc });
-      localStorage.setItem("glossary", JSON.stringify(glossary));
-      document.getElementById("term").value = "";
-      document.getElementById("termDesc").value = "";
-      renderGlossary();
-    }
-    function renderGlossary() {
-      const glossary = JSON.parse(localStorage.getItem("glossary")) || [];
-      const tbody = document.getElementById("glossaryTable").getElementsByTagName("tbody")[0];
-      tbody.innerHTML = "";
-      glossary.forEach(entry => {
-        const row = tbody.insertRow();
-        row.insertCell(0).innerText = entry.term;
-        row.insertCell(1).innerText = entry.termDesc;
-      });
-    }
+
     window.onload = renderTypeDropdowns;
   </script>
 </body>
