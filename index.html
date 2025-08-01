@@ -7,7 +7,8 @@
     body {
       font-family: sans-serif;
       margin: 40px;
-      background-color: #f4f4f4;
+      background-color: #121212;
+      color: #e0e0e0;
     }
     h1 {
       text-align: center;
@@ -19,15 +20,15 @@
     }
     th, td {
       padding: 10px;
-      border: 1px solid #999;
+      border: 1px solid #444;
       text-align: left;
     }
     th {
-      background-color: #333;
+      background-color: #222;
       color: white;
     }
     tr:nth-child(even) {
-      background-color: #eee;
+      background-color: #1e1e1e;
     }
     .add-entry, .filter-section {
       margin-top: 30px;
@@ -36,6 +37,9 @@
       display: block;
       margin-bottom: 10px;
       width: 100%;
+      background-color: #222;
+      color: white;
+      border: 1px solid #555;
     }
     button {
       padding: 10px 20px;
@@ -43,20 +47,29 @@
       color: white;
       border: none;
       cursor: pointer;
+      margin-right: 10px;
     }
   </style>
 </head>
 <body>
+  <script>
+    const password = "anomaly123";
+    const input = prompt("비밀번호를 입력하세요:");
+    if (input !== password) {
+      document.body.innerHTML = '<h2 style="text-align:center; color: red;">접근이 거부되었습니다.</h2>';
+      throw new Error("잘못된 접근");
+    }
+  </script>
+
   <h1>이변 목록</h1>
 
   <div class="filter-section">
     <label>분류 필터:
-      <select id="filterType" onchange="filterTable()">
+      <select id="filterType" onchange="renderTable()">
         <option value="">전체</option>
         <option value="A">A (기록형)</option>
         <option value="R">R (되살아남)</option>
         <option value="H">H (구조물형)</option>
-        <!-- 필요한 분류를 계속 추가 가능 -->
       </select>
     </label>
   </div>
@@ -68,24 +81,28 @@
         <th>격리 등급</th>
         <th>위험 등급</th>
         <th>설명</th>
+        <th>수정</th>
+        <th>삭제</th>
       </tr>
     </thead>
-    <tbody>
-    </tbody>
+    <tbody></tbody>
   </table>
 
   <div class="add-entry">
-    <h2>새 이변 추가</h2>
+    <h2 id="formTitle">새 이변 추가</h2>
     <label>코드 (예: A-001): <input type="text" id="code"></label>
     <label>격리 등급 (0~6): <input type="number" id="isolation" min="0" max="6"></label>
     <label>위험 등급 (0~6): <input type="number" id="threat" min="0" max="6"></label>
     <label>설명:
       <textarea id="description" rows="4"></textarea>
     </label>
-    <button onclick="addEntry()">이변 추가</button>
+    <button id="submitBtn" onclick="addEntry()">이변 추가</button>
+    <button id="cancelEditBtn" onclick="cancelEdit()" style="display:none">취소</button>
   </div>
 
   <script>
+    let editIndex = null;
+
     function saveData(data) {
       localStorage.setItem("anomalies", JSON.stringify(data));
     }
@@ -100,15 +117,38 @@
       const filter = document.getElementById("filterType").value;
 
       const data = loadData();
-      data.forEach(entry => {
+      data.forEach((entry, index) => {
         if (!filter || entry.code.startsWith(filter)) {
           const row = table.insertRow();
           row.insertCell(0).innerText = entry.code;
-          row.insertCell(1).innerText = entry.isolation;
-          row.insertCell(2).innerText = entry.threat;
+          const isoCell = row.insertCell(1);
+          isoCell.innerText = entry.isolation;
+          isoCell.style.color = getLevelColor(entry.isolation);
+          const thrCell = row.insertCell(2);
+          thrCell.innerText = entry.threat;
+          thrCell.style.color = getLevelColor(entry.threat);
           row.insertCell(3).innerText = entry.description;
+
+          const editCell = row.insertCell(4);
+          const editButton = document.createElement("button");
+          editButton.innerText = "수정";
+          editButton.onclick = () => startEdit(index);
+          editCell.appendChild(editButton);
+
+          const deleteCell = row.insertCell(5);
+          const deleteButton = document.createElement("button");
+          deleteButton.innerText = "삭제";
+          deleteButton.onclick = () => deleteEntry(index);
+          deleteCell.appendChild(deleteButton);
         }
       });
+    }
+
+    function getLevelColor(level) {
+      const lvl = parseInt(level);
+      if (lvl >= 5) return "#ff6b6b";
+      if (lvl >= 3) return "#ffa502";
+      return "#70a1ff";
     }
 
     function addEntry() {
@@ -117,9 +157,18 @@
       const threat = document.getElementById("threat").value;
       const description = document.getElementById("description").value;
 
-      const newEntry = { code, isolation, threat, description };
       const data = loadData();
-      data.push(newEntry);
+
+      if (editIndex !== null) {
+        data[editIndex] = { code, isolation, threat, description };
+        editIndex = null;
+        document.getElementById("formTitle").innerText = "새 이변 추가";
+        document.getElementById("submitBtn").innerText = "이변 추가";
+        document.getElementById("cancelEditBtn").style.display = "none";
+      } else {
+        data.push({ code, isolation, threat, description });
+      }
+
       saveData(data);
       renderTable();
 
@@ -129,8 +178,37 @@
       document.getElementById("description").value = "";
     }
 
-    function filterTable() {
-      renderTable();
+    function startEdit(index) {
+      const data = loadData();
+      const entry = data[index];
+      document.getElementById("code").value = entry.code;
+      document.getElementById("isolation").value = entry.isolation;
+      document.getElementById("threat").value = entry.threat;
+      document.getElementById("description").value = entry.description;
+      editIndex = index;
+      document.getElementById("formTitle").innerText = "이변 수정";
+      document.getElementById("submitBtn").innerText = "수정 저장";
+      document.getElementById("cancelEditBtn").style.display = "inline-block";
+    }
+
+    function cancelEdit() {
+      editIndex = null;
+      document.getElementById("code").value = "";
+      document.getElementById("isolation").value = "";
+      document.getElementById("threat").value = "";
+      document.getElementById("description").value = "";
+      document.getElementById("formTitle").innerText = "새 이변 추가";
+      document.getElementById("submitBtn").innerText = "이변 추가";
+      document.getElementById("cancelEditBtn").style.display = "none";
+    }
+
+    function deleteEntry(index) {
+      const data = loadData();
+      if (confirm("정말로 이 이변을 삭제하시겠습니까?")) {
+        data.splice(index, 1);
+        saveData(data);
+        renderTable();
+      }
     }
 
     window.onload = renderTable;
