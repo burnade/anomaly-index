@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <title>이변 목록 정리</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
@@ -66,23 +64,11 @@
     button:hover {
       background-color: #555;
     }
-    .flex-row {
-      display: flex;
-      gap: 1rem;
-    }
-    .flex-row > div {
-      flex: 1;
-    }
-    .hidden {
-      display: none;
-    }
-    .nav {
-      margin-top: 1rem;
-      text-align: center;
-    }
-    .nav button {
-      margin: 0 0.5rem;
-    }
+    .flex-row { display: flex; gap: 1rem; }
+    .flex-row > div { flex: 1; }
+    .hidden { display: none; }
+    .nav { margin-top: 1rem; text-align: center; }
+    .nav button { margin: 0 0.5rem; }
     .action-buttons button {
       margin: 0 2px;
       padding: 4px 6px;
@@ -91,6 +77,30 @@
   </style>
 </head>
 <body>
+  <script>
+    const anomalies = JSON.parse(localStorage.getItem('anomalies')) || [];
+    const types = Array.from(new Set(anomalies.map(a => a.code.split('-')[0]))).sort();
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const filterSelect = document.createElement('select');
+      filterSelect.id = 'filterType';
+      filterSelect.innerHTML = `<option value="">전체</option>` +
+        types.map(type => `<option value="${type}">${type}</option>`).join('');
+      document.body.prepend(filterSelect);
+
+      filterSelect.addEventListener('change', () => {
+        const value = filterSelect.value;
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+          const code = row.cells[0].innerText;
+          row.style.display = !value || code.startsWith(value + '-') ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>
+
   <header>
     <h1>세계관 정보 시스템</h1>
   </header>
