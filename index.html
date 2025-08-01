@@ -3,56 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <title>이변 목록 정리</title>
-  <style><!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>이변 목록 정리</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: sans-serif;
-      margin: 40px;
-      background-color: #121212;
-      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #0f0f0f;
+      color: #f0f0f0;
+    }
+    header, footer {
+      background-color: #1c1c1c;
+      padding: 1rem;
+      text-align: center;
+      border-bottom: 1px solid #333;
     }
     h1, h2 {
+      margin-top: 1.5rem;
+      color: #f8f8f8;
       text-align: center;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 30px;
+      margin-top: 1rem;
     }
     th, td {
-      padding: 10px;
-      border: 1px solid #444;
+      padding: 12px;
+      border: 1px solid #333;
       text-align: left;
     }
     th {
       background-color: #222;
-      color: white;
+      color: #fff;
     }
     tr:nth-child(even) {
-      background-color: #1e1e1e;
+      background-color: #1a1a1a;
     }
-    .section {
-      margin-top: 30px;
-    }
-    label, input, textarea, select {
-      display: block;
+    input, textarea, select, button {
+      background-color: #1f1f1f;
+      color: #f0f0f0;
+      border: 1px solid #444;
+      padding: 8px;
       margin-bottom: 10px;
       width: 100%;
-      background-color: #222;
-      color: white;
-      border: 1px solid #555;
+      border-radius: 4px;
     }
     button {
-      padding: 10px 20px;
       background-color: #333;
-      color: white;
-      border: none;
       cursor: pointer;
-      margin-right: 10px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #555;
+    }
+    .flex-row {
+      display: flex;
+      gap: 1rem;
+    }
+    .flex-row > div {
+      flex: 1;
     }
     .hidden {
       display: none;
@@ -60,29 +77,30 @@
   </style>
 </head>
 <body>
-  <div id="mainScreen">
+  <header>
     <h1>이변 관리 시스템</h1>
+  </header>
+
+  <div id="mainScreen" class="container">
     <div style="text-align:center">
       <button onclick="goToAnomalyList()">이변 목록 보기</button>
     </div>
   </div>
 
-  <div id="anomalyScreen" class="hidden">
-    <h1>이변 목록</h1>
+  <div id="anomalyScreen" class="hidden container">
+    <h2>이변 목록</h2>
 
-    <div class="section">
-      <label>분류 필터:
-        <select id="filterType" onchange="renderTable()">
-        </select>
-      </label>
-    </div>
+    <label>분류 필터:
+      <select id="filterType" onchange="renderTable()"></select>
+    </label>
 
     <table id="anomalyTable">
       <thead>
         <tr>
           <th>코드</th>
-          <th>격리 등급</th>
-          <th>위험 등급</th>
+          <th>이름</th>
+          <th>격리</th>
+          <th>위험</th>
           <th>설명</th>
           <th>수정</th>
           <th>삭제</th>
@@ -91,26 +109,27 @@
       <tbody></tbody>
     </table>
 
-    <div class="section">
-      <h2 id="formTitle">새 이변 추가</h2>
-      <label>코드 (예: A-001): <input type="text" id="code"></label>
-      <label>격리 등급 (0~6): <input type="number" id="isolation" min="0" max="6"></label>
-      <label>위험 등급 (0~6): <input type="number" id="threat" min="0" max="6"></label>
-      <label>설명:
-        <textarea id="description" rows="4"></textarea>
-      </label>
-      <button id="submitBtn" onclick="addEntry()">이변 추가</button>
-      <button id="cancelEditBtn" onclick="cancelEdit()" style="display:none">취소</button>
+    <h2 id="formTitle">새 이변 추가</h2>
+    <label>코드 (예: A-001): <input type="text" id="code"></label>
+    <label>이름 (예: 세계의 기록): <input type="text" id="name"></label>
+    <div class="flex-row">
+      <div><label>격리 등급 (0~6): <input type="number" id="isolation" min="0" max="6"></label></div>
+      <div><label>위험 등급 (0~6): <input type="number" id="threat" min="0" max="6"></label></div>
     </div>
+    <label>설명: <textarea id="description" rows="4"></textarea></label>
+    <button id="submitBtn" onclick="addEntry()">이변 추가</button>
+    <button id="cancelEditBtn" onclick="cancelEdit()" style="display:none">취소</button>
 
-    <div class="section">
-      <h2>분류 관리</h2>
-      <label>새 분류 추가: <input type="text" id="newType"></label>
-      <button onclick="addType()">추가</button>
-      <label>분류 삭제: <select id="deleteType"></select></label>
-      <button onclick="deleteType()">삭제</button>
-    </div>
+    <h2>분류 관리</h2>
+    <label>새 분류 추가: <input type="text" id="newType"></label>
+    <button onclick="addType()">추가</button>
+    <label>분류 삭제: <select id="deleteType"></select></label>
+    <button onclick="deleteType()">삭제</button>
   </div>
+
+  <footer>
+    <small>&copy; 이변 관리 시스템</small>
+  </footer>
 
   <script>
     let editIndex = null;
@@ -149,21 +168,25 @@
         if (!filter || entry.code.startsWith(filter)) {
           const row = table.insertRow();
           row.insertCell(0).innerText = entry.code;
-          const isoCell = row.insertCell(1);
+          row.insertCell(1).innerText = entry.name || "";
+
+          const isoCell = row.insertCell(2);
           isoCell.innerText = entry.isolation;
           isoCell.style.color = getLevelColor(entry.isolation);
-          const thrCell = row.insertCell(2);
+
+          const thrCell = row.insertCell(3);
           thrCell.innerText = entry.threat;
           thrCell.style.color = getLevelColor(entry.threat);
-          row.insertCell(3).innerText = entry.description;
 
-          const editCell = row.insertCell(4);
+          row.insertCell(4).innerText = entry.description;
+
+          const editCell = row.insertCell(5);
           const editButton = document.createElement("button");
           editButton.innerText = "수정";
           editButton.onclick = () => startEdit(index);
           editCell.appendChild(editButton);
 
-          const deleteCell = row.insertCell(5);
+          const deleteCell = row.insertCell(6);
           const deleteButton = document.createElement("button");
           deleteButton.innerText = "삭제";
           deleteButton.onclick = () => deleteEntry(index);
@@ -181,24 +204,26 @@
 
     function addEntry() {
       const code = document.getElementById("code").value;
+      const name = document.getElementById("name").value;
       const isolation = document.getElementById("isolation").value;
       const threat = document.getElementById("threat").value;
       const description = document.getElementById("description").value;
       const data = loadData();
 
       if (editIndex !== null) {
-        data[editIndex] = { code, isolation, threat, description };
+        data[editIndex] = { code, name, isolation, threat, description };
         editIndex = null;
         document.getElementById("formTitle").innerText = "새 이변 추가";
         document.getElementById("submitBtn").innerText = "이변 추가";
         document.getElementById("cancelEditBtn").style.display = "none";
       } else {
-        data.push({ code, isolation, threat, description });
+        data.push({ code, name, isolation, threat, description });
       }
 
       saveData(data);
       renderTable();
       document.getElementById("code").value = "";
+      document.getElementById("name").value = "";
       document.getElementById("isolation").value = "";
       document.getElementById("threat").value = "";
       document.getElementById("description").value = "";
@@ -208,6 +233,7 @@
       const data = loadData();
       const entry = data[index];
       document.getElementById("code").value = entry.code;
+      document.getElementById("name").value = entry.name || "";
       document.getElementById("isolation").value = entry.isolation;
       document.getElementById("threat").value = entry.threat;
       document.getElementById("description").value = entry.description;
@@ -220,6 +246,7 @@
     function cancelEdit() {
       editIndex = null;
       document.getElementById("code").value = "";
+      document.getElementById("name").value = "";
       document.getElementById("isolation").value = "";
       document.getElementById("threat").value = "";
       document.getElementById("description").value = "";
