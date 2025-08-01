@@ -171,9 +171,15 @@
       const deleteSelect = document.getElementById("deleteType");
       filterSelect.innerHTML = `<option value="">전체</option>`;
       deleteSelect.innerHTML = "";
+      types.sort(); // 알파벳 순 정렬
       types.forEach(type => {
-        filterSelect.innerHTML += `<option value="${type}">${type}</option>`;
-        deleteSelect.innerHTML += `<option value="${type}">${type}</option>`;
+        const opt1 = document.createElement("option");
+        opt1.value = opt1.textContent = type;
+        filterSelect.appendChild(opt1);
+
+        const opt2 = document.createElement("option");
+        opt2.value = opt2.textContent = type;
+        deleteSelect.appendChild(opt2);
       });
     }
     function renderTable() {
